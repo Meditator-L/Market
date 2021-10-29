@@ -5,7 +5,7 @@
       :key="index"
       class="tabitems"
       :class="{ active: index == currentIndex }"
-      @click="itemsclick(index)"
+      @click="itemsClick(index)"
     >
       <span>{{ items }}</span>
     </div>
@@ -28,11 +28,12 @@ export default {
       currentIndex: 0,
     };
   },
-  methods:{
-    itemsclick(index){
-      this.currentIndex =index
-    }
-  }
+  methods: {
+    itemsClick(index) {
+      this.currentIndex = index;
+      this.$emit("tabClick", index);
+    },
+  },
 };
 </script>
 <style scoped>
@@ -47,7 +48,7 @@ export default {
 .tabitems {
   flex: 1;
 }
-.tabitems span{
+.tabitems span {
   padding: 4px;
 }
 .active {

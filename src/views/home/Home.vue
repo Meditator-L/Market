@@ -9,57 +9,9 @@
     <tab-control
       :title="['流行', '新款', '精选']"
       class="tab-control"
+      @tabClick="tabClick"
     ></tab-control>
-    <ul>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-      <li>1</li>
-    </ul>
+    <goods-list :goods="showGoods"></goods-list>
   </div>
 </template>
 
@@ -69,6 +21,7 @@ import HomeSwiper from "../../views/home/childrencomps/HomeSwiper.vue";
 import RecommandView from "../../views/home/childrencomps/RecommandView.vue";
 import FeatureView from "../../views/home/childrencomps/FeatureView.vue";
 import TabControl from "../../components/content/tabcontrol/TabControl.vue";
+import GoodsList from "../../components/content/goods/GoodsList.vue";
 import { getHomeMutilate, getHomeGoods } from "../../network/home";
 
 export default {
@@ -82,6 +35,7 @@ export default {
         new: { page: 0, list: [] },
         sell: { page: 0, list: [] },
       },
+      currentType: "pop",
     };
   },
   components: {
@@ -90,14 +44,21 @@ export default {
     RecommandView,
     FeatureView,
     TabControl,
+    GoodsList,
   },
   created() {
     this.getHomeMutilate();
-    this.getHomeGoods('pop');
-    this.getHomeGoods('new');
-    this.getHomeGoods('sell');
+    this.getHomeGoods("pop");
+    this.getHomeGoods("new");
+    this.getHomeGoods("sell");
+  },
+  computed: {
+    showGoods() {
+      return this.goods[this.currentType].list;
+    },
   },
   methods: {
+    //网络请求方法
     getHomeMutilate() {
       getHomeMutilate().then((res) => {
         // console.log(res);
@@ -112,6 +73,20 @@ export default {
         this.goods[type].list.push(...res.data.list);
         this.goods[type].page += 1;
       });
+    },
+    //监听事件方法
+    tabClick(index) {
+      switch (index) {
+        case 0:
+          this.currentType = "pop";
+          break;
+        case 1:
+          this.currentType = "new";
+          break;
+        case 2:
+          this.currentType = "sell";
+          break;
+      }
     },
   },
 };
@@ -134,5 +109,6 @@ export default {
 .tab-control {
   position: sticky;
   top: 44px;
+  z-index: 8;
 }
 </style>
