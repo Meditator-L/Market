@@ -3,15 +3,18 @@
     <nav-bar class="home-nav">
       <template v-slot:center> 购物街 </template>
     </nav-bar>
-    <home-swiper :banners="banners" class="home-swiper"></home-swiper>
-    <recommand-view :recommends="recommends"></recommand-view>
-    <feature-view></feature-view>
-    <tab-control
-      :title="['流行', '新款', '精选']"
-      class="tab-control"
-      @tabClick="tabClick"
-    ></tab-control>
-    <goods-list :goods="showGoods"></goods-list>
+    <scroll class="content" ref="scroll" :probeType="3" @scroll="scrollcontent">
+      <home-swiper :banners="banners" class="home-swiper"></home-swiper>
+      <recommand-view :recommends="recommends"></recommand-view>
+      <feature-view></feature-view>
+      <tab-control
+        :title="['流行', '新款', '精选']"
+        class="tab-control"
+        @tabClick="tabClick"
+      ></tab-control>
+      <goods-list :goods="showGoods"></goods-list>
+    </scroll>
+    <back-top @click.native="backClick" v-show="isShowBackTop"></back-top>
   </div>
 </template>
 
@@ -22,6 +25,9 @@ import RecommandView from "../../views/home/childrencomps/RecommandView.vue";
 import FeatureView from "../../views/home/childrencomps/FeatureView.vue";
 import TabControl from "../../components/content/tabcontrol/TabControl.vue";
 import GoodsList from "../../components/content/goods/GoodsList.vue";
+import Scroll from "../../components/common/scroll/Scroll.vue";
+import BackTop from "../../components/content/backtop/BackTop.vue";
+
 import { getHomeMutilate, getHomeGoods } from "../../network/home";
 
 export default {
@@ -36,6 +42,7 @@ export default {
         sell: { page: 0, list: [] },
       },
       currentType: "pop",
+      isShowBackTop: true,
     };
   },
   components: {
@@ -45,6 +52,8 @@ export default {
     FeatureView,
     TabControl,
     GoodsList,
+    Scroll,
+    BackTop,
   },
   created() {
     this.getHomeMutilate();
@@ -88,13 +97,21 @@ export default {
           break;
       }
     },
+    backClick() {
+      this.$refs.scroll.scrollTo(0, 0);
+    },
+    scrollcontent(position) {
+      this.isShowBackTop = -position.y > 1000;
+    },
   },
 };
 </script>
 <style scoped>
 #home {
   /* position: relative; */
+  height: 100vh;
   padding-top: 44px;
+  position: relative;
 }
 
 .home-nav {
@@ -110,5 +127,13 @@ export default {
   position: sticky;
   top: 44px;
   z-index: 8;
+}
+.content {
+  position: absolute;
+  top: 44px;
+  bottom: 49px;
+  left: 0;
+  right: 0;
+  overflow: hidden;
 }
 </style>
