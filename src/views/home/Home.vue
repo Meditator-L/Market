@@ -3,7 +3,14 @@
     <nav-bar class="home-nav">
       <template v-slot:center> 购物街 </template>
     </nav-bar>
-    <scroll class="content" ref="scroll" :probeType="3" @scroll="scrollcontent">
+    <scroll
+      class="content"
+      ref="scroll"
+      :probeType="3"
+      :pullUpLoad="true"
+      @scroll="scrollcontent"
+      @pullingUp="loadMore"
+    >
       <home-swiper :banners="banners" class="home-swiper"></home-swiper>
       <recommand-view :recommends="recommends"></recommand-view>
       <feature-view></feature-view>
@@ -56,10 +63,19 @@ export default {
     BackTop,
   },
   created() {
+    //请求多个数据
     this.getHomeMutilate();
+    //请求商品数据
     this.getHomeGoods("pop");
     this.getHomeGoods("new");
     this.getHomeGoods("sell");
+  },
+  mounted() {
+    //监听item中图片加载完成
+    const refresh = this.debounce(this.$refs.scroll.refresh, 500);
+    this.$bus.$on("itemImageLoad", () => {
+      refresh();
+    });
   },
   computed: {
     showGoods() {
@@ -81,6 +97,7 @@ export default {
         // console.log(res);
         this.goods[type].list.push(...res.data.list);
         this.goods[type].page += 1;
+        this.$refs.scroll.finishPullUp();
       });
     },
     //监听事件方法
@@ -102,6 +119,19 @@ export default {
     },
     scrollcontent(position) {
       this.isShowBackTop = -position.y > 1000;
+    },
+    loadMore() {
+      this.getHomeGoods(this.currentType);
+    },
+    //防抖 解决refresh频繁执行  
+    debounce(func, delay) {
+      let timer = null;
+      return function (...args) {
+        clearInterval(timer);
+        timer = setTimeout(() => {
+          func.apply(this, args);
+        }, delay);
+      };
     },
   },
 };
