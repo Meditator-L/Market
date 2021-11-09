@@ -3,22 +3,36 @@
     <nav-bar class="home-nav">
       <template v-slot:center> 购物街 </template>
     </nav-bar>
+    <tab-control
+      :title="['流行', '新款', '精选']"
+      @tabClick="tabClick"
+      ref="tabControl1"
+      class="tab-control"
+      v-show="isTabFixed"
+    >
+    </tab-control>
     <scroll
       class="content"
       ref="scroll"
       :probeType="3"
       :pullUpLoad="true"
-      @scroll="scrollcontent"
+      @scroll="contentScroll"
       @pullingUp="loadMore"
     >
-      <home-swiper :banners="banners" class="home-swiper"></home-swiper>
+      <home-swiper
+        :banners="banners"
+        class="home-swiper"
+        @swiperImageLoad="swiperImageLoad"
+      ></home-swiper>
       <recommand-view :recommends="recommends"></recommand-view>
       <feature-view></feature-view>
       <tab-control
         :title="['流行', '新款', '精选']"
-        class="tab-control"
         @tabClick="tabClick"
-      ></tab-control>
+        ref="tabControl2"
+      >
+        <!-- :class="{fixed:true}" -->
+      </tab-control>
       <goods-list :goods="showGoods"></goods-list>
     </scroll>
     <back-top @click.native="backClick" v-show="isShowBackTop"></back-top>
@@ -36,6 +50,7 @@ import Scroll from "../../components/common/scroll/Scroll.vue";
 import BackTop from "../../components/content/backtop/BackTop.vue";
 
 import { getHomeMutilate, getHomeGoods } from "../../network/home";
+import { debounce } from "../../common/utils";
 
 export default {
   name: "Home",
@@ -49,7 +64,10 @@ export default {
         sell: { page: 0, list: [] },
       },
       currentType: "pop",
-      isShowBackTop: true,
+      isShowBackTop: false,
+      tabOffsetTop: 0,
+      isTabFixed: false,
+      saveY: 0,
     };
   },
   components: {
@@ -72,10 +90,17 @@ export default {
   },
   mounted() {
     //监听item中图片加载完成
-    const refresh = this.debounce(this.$refs.scroll.refresh, 500);
+    const refresh = debounce(this.$refs.scroll.refresh, 50);
     this.$bus.$on("itemImageLoad", () => {
       refresh();
     });
+  },
+  activated() {
+    this.$refs.scroll.scrollTo(0, this.saveY, 0);
+    this.$refs.scroll.refresh();
+  },
+  deactivated() {
+    this.saveY = this.$refs.scroll.getScrollY();
   },
   computed: {
     showGoods() {
@@ -86,7 +111,6 @@ export default {
     //网络请求方法
     getHomeMutilate() {
       getHomeMutilate().then((res) => {
-        // console.log(res);
         this.banners = res.data.banner.list;
         this.recommends = res.data.recommend.list;
       });
@@ -94,9 +118,9 @@ export default {
     getHomeGoods(type) {
       const page = this.goods[type].page + 1;
       getHomeGoods(type, page).then((res) => {
-        // console.log(res);
         this.goods[type].list.push(...res.data.list);
         this.goods[type].page += 1;
+        //完成加载更多
         this.$refs.scroll.finishPullUp();
       });
     },
@@ -113,45 +137,46 @@ export default {
           this.currentType = "sell";
           break;
       }
+      this.$refs.tabControl1.currentIndex = index;
+      this.$refs.tabControl2.currentIndex = index;
     },
     backClick() {
       this.$refs.scroll.scrollTo(0, 0);
     },
-    scrollcontent(position) {
+    contentScroll(position) {
+      console.log(position);
+      //判断backtop是否显示
       this.isShowBackTop = -position.y > 1000;
+      //决定tabcontrol是否吸顶
+      this.isTabFixed = -position.y > this.tabOffsetTop;
     },
+    //加载更多
     loadMore() {
       this.getHomeGoods(this.currentType);
     },
-    //防抖 解决refresh频繁执行  
-    debounce(func, delay) {
-      let timer = null;
-      return function (...args) {
-        clearInterval(timer);
-        timer = setTimeout(() => {
-          func.apply(this, args);
-        }, delay);
-      };
+    //获取tabControl的offsetTop
+    swiperImageLoad() {
+      // console.log(this.$refs.tabControl2.$el.offsetTop);
+      this.tabOffsetTop = this.$refs.tabControl2.$el.offsetTop;
+      // console.log(this.tabOffsetTop);
     },
   },
 };
 </script>
 <style scoped>
 #home {
-  /* position: relative; */
   height: 100vh;
-  padding-top: 44px;
   position: relative;
 }
 
 .home-nav {
   background: var(--color-tint);
   color: var(--color-background);
-  position: fixed;
+  /* position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  z-index: 9;
+  right: 0; */
+  /* z-index: 9; */
 }
 .tab-control {
   position: sticky;
@@ -166,4 +191,10 @@ export default {
   right: 0;
   overflow: hidden;
 }
+/* .fixed{
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 44px;
+  } */
 </style>
