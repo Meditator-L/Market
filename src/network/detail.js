@@ -18,7 +18,18 @@ export class Goods {
     this.discount = itemInfo.discountDesc;
     this.columns = columns;
     this.services = services;
-    this.realPrice = itemInfo.lowNowPrice; 
+    this.realPrice = itemInfo.lowNowPrice;
 
+  }
+}
+
+export class Shop {
+  constructor(shopInfo) {
+    this.logo = shopInfo.shopLogo;
+    this.name = shopInfo.name;
+    this.fans = shopInfo.cFans;
+    this.sells = shopInfo.cSells;
+    this.score = shopInfo.score;
+    this.goodsCount = shopInfo.cGoods;
   }
 }
