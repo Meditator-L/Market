@@ -33,8 +33,11 @@ import {
   GoodsParam,
   getRecommend,
 } from "../../network/detail";
+
+import {itemListenerMixin} from "../../common/mixin"
 export default {
   name: "Detail",
+  mixins:[itemListenerMixin],
   data() {
     return {
       iid: null,
@@ -45,6 +48,8 @@ export default {
       paramInfo: {},
       commentInfo: {},
       recommends: [],
+      
+
     };
   },
   components: {
@@ -98,6 +103,12 @@ export default {
     imageLoad() {
       this.$refs.scroll.refresh();
     },
+  },
+  mounted() {
+    
+  },
+  destroyed() {
+    this.$bus.$off("itemImageLoad", this.itemImgListener);
   },
 };
 </script>
