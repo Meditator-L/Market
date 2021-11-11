@@ -10,6 +10,8 @@
         @imageLoad="imageLoad"
       ></detail-goods-info>
       <detail-param-info :paramInfo="paramInfo"></detail-param-info>
+      <detail-comment-info :commentInfo="commentInfo"></detail-comment-info>
+      <goods-list :goods="recommends"></goods-list>
     </scroll>
   </div>
 </template>
@@ -21,8 +23,16 @@ import DetailBaseInfo from "./childrenComponents/DetailBaseInfo.vue";
 import DetailShopInfo from "./childrenComponents/DetailShopInfo.vue";
 import DetailGoodsInfo from "./childrenComponents/DetailGoodsInfo.vue";
 import DetailParamInfo from "./childrenComponents/DetailParamInfo.vue";
+import DetailCommentInfo from "./childrenComponents/DetailCommentInfo.vue";
+import GoodsList from "../../components/content/goods/GoodsList.vue";
 import Scroll from "../../components/common/scroll/Scroll.vue";
-import { getDetail, Goods, Shop, GoodsParam } from "../../network/detail";
+import {
+  getDetail,
+  Goods,
+  Shop,
+  GoodsParam,
+  getRecommend,
+} from "../../network/detail";
 export default {
   name: "Detail",
   data() {
@@ -33,6 +43,8 @@ export default {
       shop: {},
       detailInfo: {},
       paramInfo: {},
+      commentInfo: {},
+      recommends: [],
     };
   },
   components: {
@@ -43,13 +55,15 @@ export default {
     Scroll,
     DetailGoodsInfo,
     DetailParamInfo,
+    DetailCommentInfo,
+    GoodsList,
   },
   created() {
     //保存传入的iid
     this.iid = this.$route.params.iid;
     // 根据iid传入数据
     getDetail(this.iid).then((res) => {
-      console.log(res);
+      // console.log(res);
       //获取顶部轮播图数据
       const data = res.result;
       this.topImages = data.itemInfo.topImages;
@@ -69,6 +83,15 @@ export default {
         data.itemParams.info,
         data.itemParams.rule
       );
+      //获取评论信息
+      if (data.rate.cRate !== 0) {
+        this.commentInfo = data.rate.list[0];
+      }
+    });
+    //请求推荐数据
+    getRecommend().then((res) => {
+      console.log(res);
+      this.recommends = res.data.list;
     });
   },
   methods: {
