@@ -33,12 +33,13 @@ export default {
       pullUpLoad: this.pullUpLoad,
     });
     //监听滚动位置
-    if (this.pullUpLoad === 2 || this.pullUpLoad === 3) {
-      this.scroll.on("scroll", (position) => {
-        this.$emit("scroll", position);
-        console.log(position);
-      });
-    }
+    // if (this.pullUpLoad === 2 || this.pullUpLoad === 3) {
+
+    // }
+    this.scroll.on("scroll", (position) => {
+      this.$emit("scroll", position);
+      // console.log(position);
+    });
     //监听上拉事件
     if (this.pullUpLoad) {
       this.scroll.on("pullingUp", () => {

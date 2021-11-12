@@ -1,7 +1,16 @@
 <template>
   <div id="detail">
-    <detail-nav-bar class="nav-detail"></detail-nav-bar>
-    <scroll class="content" ref="scroll">
+    <detail-nav-bar
+      class="nav-detail"
+      @titleClick="titleClick"
+      ref="nav"
+    ></detail-nav-bar>
+    <scroll
+      class="content"
+      ref="scroll"
+      :probe-type="3"
+      @scroll="contentScroll"
+    >
       <detail-swiper :topImages="topImages"></detail-swiper>
       <detail-base-info :goods="goods"></detail-base-info>
       <detail-shop-info :shop="shop"></detail-shop-info>
@@ -9,9 +18,15 @@
         :detailInfo="detailInfo"
         @imageLoad="imageLoad"
       ></detail-goods-info>
-      <detail-param-info :paramInfo="paramInfo"></detail-param-info>
-      <detail-comment-info :commentInfo="commentInfo"></detail-comment-info>
-      <goods-list :goods="recommends"></goods-list>
+      <detail-param-info
+        ref="params"
+        :paramInfo="paramInfo"
+      ></detail-param-info>
+      <detail-comment-info
+        ref="comments"
+        :commentInfo="commentInfo"
+      ></detail-comment-info>
+      <goods-list ref="recommend" :goods="recommends"></goods-list>
     </scroll>
   </div>
 </template>
@@ -34,10 +49,11 @@ import {
   getRecommend,
 } from "../../network/detail";
 
-import {itemListenerMixin} from "../../common/mixin"
+import { itemListenerMixin } from "../../common/mixin";
+import { debounce } from "../../common/utils";
 export default {
   name: "Detail",
-  mixins:[itemListenerMixin],
+  mixins: [itemListenerMixin],
   data() {
     return {
       iid: null,
@@ -48,8 +64,9 @@ export default {
       paramInfo: {},
       commentInfo: {},
       recommends: [],
-      
-
+      themTopYs: [],
+      getthemeTopY: null,
+      currentIndex: 0,
     };
   },
   components: {
@@ -92,20 +109,66 @@ export default {
       if (data.rate.cRate !== 0) {
         this.commentInfo = data.rate.list[0];
       }
+      //  获取评论等navbar标题栏上面内容的距离
+      this.$nextTick(() => {
+        this.themTopYs = [];
+        this.themTopYs.push(0);
+        this.themTopYs.push(this.$refs.params.$el.offsetTop);
+        this.themTopYs.push(this.$refs.comments.$el.offsetTop);
+        this.themTopYs.push(this.$refs.recommend.$el.offsetTop);
+        console.log(this.themTopYs);
+      });
     });
     //请求推荐数据
     getRecommend().then((res) => {
       console.log(res);
       this.recommends = res.data.list;
     });
+    //给getthemeTopY赋值并进行防抖
+    this.getthemeTopY = debounce(() => {
+      this.themTopYs = [];
+      this.themTopYs.push(0);
+      this.themTopYs.push(this.$refs.params.$el.offsetTop);
+      this.themTopYs.push(this.$refs.comments.$el.offsetTop);
+      this.themTopYs.push(this.$refs.recommend.$el.offsetTop);
+    });
   },
   methods: {
     imageLoad() {
       this.$refs.scroll.refresh();
+      this.getthemeTopY();
+    },
+    titleClick(index) {
+      // console.log(index);
+      this.$refs.scroll.scrollTo(0, -this.themTopYs[index], 100);
+    },
+    contentScroll(position) {
+      //  获取Y值
+      const positionY = -position.y;
+      //positionY与主题部分实际距离对比
+      let length = this.themTopYs.length;
+      for (let i = 0; i < length; i++) {
+        if (
+          this.currentIndex !== i &&
+          ((i < length - 1 &&
+            positionY >= this.themTopYs[i] &&
+            positionY < this.themTopYs[i + 1]) ||
+            (i === length - 1 && positionY >= this.themTopYs[i]))
+        ) {
+          this.currentIndex = i;
+          // console.log(this.currentIndex);
+          this.$refs.nav.currentIndex = this.currentIndex;
+        }
+      }
     },
   },
-  mounted() {
-    
+  mounted() {},
+  updated() {
+    // this.themTopYs = [ ];
+    // this.themTopYs.push(0);
+    // this.themTopYs.push(this.$refs.params.$el.offsetTop);
+    // this.themTopYs.push(this.$refs.comments.$el.offsetTop);
+    // this.themTopYs.push(this.$refs.recommend.$el.offsetTop);
   },
   destroyed() {
     this.$bus.$off("itemImageLoad", this.itemImgListener);

@@ -150,7 +150,7 @@ export default {
       this.$refs.scroll.scrollTo(0, 0);
     },
     contentScroll(position) {
-      console.log(position);
+      // console.log(position);
       //判断backtop是否显示
       this.isShowBackTop = -position.y > 1000;
       //决定tabcontrol是否吸顶

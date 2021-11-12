@@ -39,6 +39,7 @@ export default {
   methods: {
     titleClick(index) {
       this.currentIndex = index;
+      this.$emit("titleClick", index);
     },
     //返回首页
     backClick() {
