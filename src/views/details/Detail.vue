@@ -28,6 +28,8 @@
       ></detail-comment-info>
       <goods-list ref="recommend" :goods="recommends"></goods-list>
     </scroll>
+    <detail-bottom-bar></detail-bottom-bar>
+    <back-top @click.native="backClick" v-show="isShowBackTop"></back-top>
   </div>
 </template>
 
@@ -40,7 +42,9 @@ import DetailGoodsInfo from "./childrenComponents/DetailGoodsInfo.vue";
 import DetailParamInfo from "./childrenComponents/DetailParamInfo.vue";
 import DetailCommentInfo from "./childrenComponents/DetailCommentInfo.vue";
 import GoodsList from "../../components/content/goods/GoodsList.vue";
+import DetailBottomBar from "./childrenComponents/DetailBottomBar.vue";
 import Scroll from "../../components/common/scroll/Scroll.vue";
+
 import {
   getDetail,
   Goods,
@@ -49,11 +53,12 @@ import {
   getRecommend,
 } from "../../network/detail";
 
-import { itemListenerMixin } from "../../common/mixin";
+import { itemListenerMixin, backTopMixin } from "../../common/mixin";
 import { debounce } from "../../common/utils";
+
 export default {
   name: "Detail",
-  mixins: [itemListenerMixin],
+  mixins: [itemListenerMixin, backTopMixin],
   data() {
     return {
       iid: null,
@@ -79,6 +84,8 @@ export default {
     DetailParamInfo,
     DetailCommentInfo,
     GoodsList,
+    DetailBottomBar,
+   
   },
   created() {
     //保存传入的iid
@@ -160,6 +167,8 @@ export default {
           this.$refs.nav.currentIndex = this.currentIndex;
         }
       }
+      //是否显示回到顶部
+      this.isShowBackTop = -position.y > 1000;
     },
   },
   mounted() {},
