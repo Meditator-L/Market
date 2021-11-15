@@ -28,7 +28,7 @@
       ></detail-comment-info>
       <goods-list ref="recommend" :goods="recommends"></goods-list>
     </scroll>
-    <detail-bottom-bar @addCart="addCart"></detail-bottom-bar>
+    <detail-bottom-bar @addCart="addToCart"></detail-bottom-bar>
     <back-top @click.native="backClick" v-show="isShowBackTop"></back-top>
   </div>
 </template>
@@ -122,12 +122,12 @@ export default {
         this.themTopYs.push(this.$refs.params.$el.offsetTop);
         this.themTopYs.push(this.$refs.comments.$el.offsetTop);
         this.themTopYs.push(this.$refs.recommend.$el.offsetTop);
-        console.log(this.themTopYs);
+        // console.log(this.themTopYs);
       });
     });
     //请求推荐数据
     getRecommend().then((res) => {
-      console.log(res);
+      // console.log(res);
       this.recommends = res.data.list;
     });
     //给getthemeTopY赋值并进行防抖
@@ -169,7 +169,7 @@ export default {
       //是否显示回到顶部
       this.isShowBackTop = -position.y > 1000;
     },
-    addCart() {
+    addToCart() {
       //获取购物车需要展示的信息
       const product = {};
       product.image = this.topImages[0];
