@@ -30,6 +30,7 @@
     </scroll>
     <detail-bottom-bar @addCart="addToCart"></detail-bottom-bar>
     <back-top @click.native="backClick" v-show="isShowBackTop"></back-top>
+    <!-- <toast :message="message" :show="show"></toast> -->
   </div>
 </template>
 
@@ -44,6 +45,7 @@ import DetailCommentInfo from "./childrenComponents/DetailCommentInfo.vue";
 import GoodsList from "../../components/content/goods/GoodsList.vue";
 import DetailBottomBar from "./childrenComponents/DetailBottomBar.vue";
 import Scroll from "../../components/common/scroll/Scroll.vue";
+// import Toast from "../../components/common/toast/Toast.vue";
 
 import {
   getDetail,
@@ -55,6 +57,7 @@ import {
 
 import { itemListenerMixin, backTopMixin } from "../../common/mixin";
 import { debounce } from "../../common/utils";
+import { mapActions } from "vuex";
 
 export default {
   name: "Detail",
@@ -72,6 +75,8 @@ export default {
       themTopYs: [],
       getthemeTopY: null,
       currentIndex: 0,
+      // message: "",
+      // show: false,
     };
   },
   components: {
@@ -85,6 +90,7 @@ export default {
     DetailCommentInfo,
     GoodsList,
     DetailBottomBar,
+    // Toast,
   },
   created() {
     //保存传入的iid
@@ -140,6 +146,7 @@ export default {
     });
   },
   methods: {
+    ...mapActions(["addCart"]),
     imageLoad() {
       this.$refs.scroll.refresh();
       this.getthemeTopY();
@@ -178,7 +185,20 @@ export default {
       product.price = this.goods.realPrice;
       product.iid = this.iid;
       //将商品添加到购物车
-      this.$store.dispatch("addCart", product);
+      //通过mapActions将addCart映射到自己的方法中，vue内部会操作执行dispatch方法
+      this.addCart(product).then((res) => {
+        // this.show = true;
+        // this.message = res;
+        // setTimeout(() => {
+        //   this.show = false;
+        //   this.message = "";
+        // }, 1500);
+        // console.log(res);
+        this.$toast.show(res)
+      });
+      // this.$store.dispatch("addCart", product).then((res) => {
+      //   console.log(res);
+      // });
     },
   },
   mounted() {},
